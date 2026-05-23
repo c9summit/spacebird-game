@@ -1,0 +1,65 @@
+{
+	"partitions" : [
+		{
+			"name" : "Top",
+			"pins" : [
+				{
+					"name" : "hsync",
+					"strict" : false
+				},
+				{
+					"name" : "vsync",
+					"strict" : false
+				},
+				{
+					"name" : "blueo[3]",
+					"strict" : false
+				},
+				{
+					"name" : "blueo[2]",
+					"strict" : false
+				},
+				{
+					"name" : "blueo[1]",
+					"strict" : false
+				},
+				{
+					"name" : "blueo[0]",
+					"strict" : false
+				},
+				{
+					"name" : "greeno[3]",
+					"strict" : false
+				},
+				{
+					"name" : "greeno[2]",
+					"strict" : false
+				},
+				{
+					"name" : "greeno[1]",
+					"strict" : false
+				},
+				{
+					"name" : "greeno[0]",
+					"strict" : false
+				},
+				{
+					"name" : "redo[3]",
+					"strict" : false
+				},
+				{
+					"name" : "redo[2]",
+					"strict" : false
+				},
+				{
+					"name" : "redo[1]",
+					"strict" : false
+				},
+				{
+					"name" : "redo[0]",
+					"strict" : false
+				}
+			]
+		}
+	]
+}
