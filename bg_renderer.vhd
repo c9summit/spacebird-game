@@ -8,7 +8,6 @@ entity bg_renderer is
         pixel_row    : in  std_logic_vector(9 downto 0);
         pixel_column : in  std_logic_vector(9 downto 0);
         scroll_en    : in  std_logic;
-        reset        : in  std_logic;
         red, green, blue : out std_logic_vector(3 downto 0)
 
     );
@@ -20,14 +19,10 @@ architecture behaviour of bg_renderer is
 
 begin
 
-    process(clk, reset)
+    process(clk)
     begin
 
-        if reset = '1' then
-            scroll_x <= (others => '0');
-
-        elsif rising_edge(clk) then
-
+        if rising_edge(clk) then
             if scroll_en = '1' then
                 scroll_x <= scroll_x + 1;
             end if;
