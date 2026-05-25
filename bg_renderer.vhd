@@ -48,10 +48,10 @@ begin
     y  := to_integer(unsigned(pixel_row));
     sx := to_integer(scroll_x);
 
-    -- Blue background
+    -- Black background
     red   <= "0000";
     green <= "0000";
-    blue  <= "1111";
+    blue  <= "0000";
 
     -- White stars (4x4 pixels)
     if (((x + sx) mod 63 < 4) and
