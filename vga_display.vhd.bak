@@ -43,7 +43,7 @@ architecture behaviour OF vga_display IS
 		clock				: 	IN STD_LOGIC ;
 		rom_mux_output		:	OUT STD_LOGIC
 	);
-    END component;
+    END char_rom;
 
     CONSTANT MENU_SCRN : STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
     CONSTANT PLAY_SCRN : STD_LOGIC_VECTOR(1 DOWNTO 0) := "01";
