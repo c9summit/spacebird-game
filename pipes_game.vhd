@@ -21,7 +21,8 @@ ENTITY pipes_game IS
 
         pipe_x_out    : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
         gap_top_out   : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
-        gap_bot_out   : OUT STD_LOGIC_VECTOR(9 DOWNTO 0)
+        gap_bot_out   : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
+        pass_count_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
 END pipes_game;
 
@@ -170,5 +171,6 @@ BEGIN
     pipe_x_out  <= CONV_STD_LOGIC_VECTOR(pipe_x,  10);
     gap_top_out <= CONV_STD_LOGIC_VECTOR(gap_top,  10);
     gap_bot_out <= CONV_STD_LOGIC_VECTOR(gap_top + GAP_HEIGHT, 10);
+    pass_count_out <= CONV_STD_LOGIC_VECTOR(pass_count, 8);
 
 END behaviour;
