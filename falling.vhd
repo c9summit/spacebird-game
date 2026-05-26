@@ -64,10 +64,14 @@ BEGIN
     Move_Ball: PROCESS(vert_sync)
     BEGIN
         IF rising_edge(vert_sync) THEN
-            IF (ball_y_pos >= CONV_STD_LOGIC_VECTOR(479, 10) - SPRITE_H) THEN
+            IF (ball_y_pos > CONV_STD_LOGIC_VECTOR(479, 10) - SPRITE_H) THEN
                 -- Hit bottom: stop and clamp
                 ball_y_motion <= (OTHERS => '0');
                 ball_y_pos    <= CONV_STD_LOGIC_VECTOR(479, 10) - SPRITE_H;
+            ELSIF (ball_y_pos <= SPRITE_H) THEN
+                -- Hit top: stop and clamp
+                ball_y_motion <= ball_y_motion + CONV_STD_LOGIC_VECTOR(1, 10); -- small nudge to prevent sticking
+                ball_y_pos    <= ball_y_pos + ball_y_motion;
             ELSIF (lmsb = '1') THEN
                 -- Mouse click: thrust upward
                 ball_y_motion <= -CONV_STD_LOGIC_VECTOR(4, 10);
