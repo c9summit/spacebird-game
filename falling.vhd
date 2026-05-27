@@ -23,7 +23,7 @@ ARCHITECTURE behaviour OF falling IS
     END COMPONENT;
 
     SIGNAL ball_y_pos    : STD_LOGIC_VECTOR(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(240, 10);
-    SIGNAL ball_x_pos    : STD_LOGIC_VECTOR(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(590, 10);
+    SIGNAL ball_x_pos    : STD_LOGIC_VECTOR(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(320, 10);
     SIGNAL ball_y_motion : STD_LOGIC_VECTOR(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(0, 10);
 
     SIGNAL sprite_addr  : STD_LOGIC_VECTOR(8 DOWNTO 0);
@@ -73,25 +73,25 @@ BEGIN
                 ball_y_pos    <= START_Y;
                 ball_y_motion <= (OTHERS => '0');
  
-            ELSIF (ball_y_pos >= BOTTOM) THEN
-                -- Hit bottom: clamp
+            ELSIF (ball_y_pos > (CONV_STD_LOGIC_VECTOR(479, 10) - SPRITE_H)) THEN
+                -- Hit bottom
                 ball_y_motion <= (OTHERS => '0');
-                ball_y_pos    <= BOTTOM;
+					 ball_y_pos <= (CONV_STD_LOGIC_VECTOR(479, 10) - SPRITE_H);
  
-            ELSIF (ball_y_pos <= CONV_STD_LOGIC_VECTOR(0, 10)) THEN
+            ELSIF (ball_y_pos <= SPRITE_H) THEN
                 -- Hit top: clamp and start falling
-                ball_y_motion <= CONV_STD_LOGIC_VECTOR(1, 10);
-                ball_y_pos    <= CONV_STD_LOGIC_VECTOR(0, 10);
+                ball_y_motion <= ball_y_motion + CONV_STD_LOGIC_VECTOR(1, 10);
+					 ball_y_pos <= ball_y_pos + ball_y_motion;
  
             ELSIF (lmsb = '1') THEN
                 -- Thrust: apply immediately
                 ball_y_motion <= -CONV_STD_LOGIC_VECTOR(4, 10);
-                ball_y_pos    <= ball_y_pos - CONV_STD_LOGIC_VECTOR(4, 10);
+					 ball_y_pos <= ball_y_pos + ball_y_motion;
  
             ELSE
                 -- Gravity
                 ball_y_motion <= ball_y_motion + CONV_STD_LOGIC_VECTOR(1, 10);
-                ball_y_pos    <= ball_y_pos + ball_y_motion;
+					 ball_y_pos <= ball_y_pos + ball_y_motion;
             END IF;
  
         END IF;
