@@ -4,9 +4,11 @@ USE IEEE.STD_LOGIC_ARITH.all;
 USE IEEE.STD_LOGIC_SIGNED.all;
 
 ENTITY falling IS
-    PORT(lmsb, clk, vert_sync : IN STD_LOGIC;
+    PORT(lmsb, clk, vert_sync, scroll_en : IN STD_LOGIC;
         pixel_row, pixel_column : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
-        red, green, blue : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+        red, green, blue : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+        ball_x_pos_out, ball_y_pos_out  : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
+        floor_hit : OUT STD_LOGIC
     );
 END falling;
 
@@ -35,6 +37,8 @@ ARCHITECTURE behaviour OF falling IS
 
     CONSTANT SPRITE_W : STD_LOGIC_VECTOR(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(32, 10);
     CONSTANT SPRITE_H : STD_LOGIC_VECTOR(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(16, 10);
+    CONSTANT BOTTOM   : STD_LOGIC_VECTOR(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(463, 10);
+    CONSTANT START_Y  : STD_LOGIC_VECTOR(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(240, 10);
 
 BEGIN
 
@@ -64,28 +68,41 @@ BEGIN
     Move_Ball: PROCESS(vert_sync)
     BEGIN
         IF rising_edge(vert_sync) THEN
-            IF (ball_y_pos > CONV_STD_LOGIC_VECTOR(479, 10) - SPRITE_H) THEN
-                -- Hit bottom: stop and clamp
+            -- Reset position on new game
+            IF scroll_en = '0' THEN
+                ball_y_pos    <= START_Y;
                 ball_y_motion <= (OTHERS => '0');
-                ball_y_pos    <= CONV_STD_LOGIC_VECTOR(479, 10) - SPRITE_H;
-            ELSIF (ball_y_pos <= SPRITE_H) THEN
-                -- Hit top: stop and clamp
-                ball_y_motion <= ball_y_motion + CONV_STD_LOGIC_VECTOR(1, 10); -- small nudge to prevent sticking
-                ball_y_pos    <= ball_y_pos + ball_y_motion;
+ 
+            ELSIF (ball_y_pos >= BOTTOM) THEN
+                -- Hit bottom: clamp
+                ball_y_motion <= (OTHERS => '0');
+                ball_y_pos    <= BOTTOM;
+ 
+            ELSIF (ball_y_pos <= CONV_STD_LOGIC_VECTOR(0, 10)) THEN
+                -- Hit top: clamp and start falling
+                ball_y_motion <= CONV_STD_LOGIC_VECTOR(1, 10);
+                ball_y_pos    <= CONV_STD_LOGIC_VECTOR(0, 10);
+ 
             ELSIF (lmsb = '1') THEN
-                -- Mouse click: thrust upward
+                -- Thrust: apply immediately
                 ball_y_motion <= -CONV_STD_LOGIC_VECTOR(4, 10);
-                ball_y_pos    <= ball_y_pos + ball_y_motion;
+                ball_y_pos    <= ball_y_pos - CONV_STD_LOGIC_VECTOR(4, 10);
+ 
             ELSE
-                -- Gravity: accelerate downward
+                -- Gravity
                 ball_y_motion <= ball_y_motion + CONV_STD_LOGIC_VECTOR(1, 10);
                 ball_y_pos    <= ball_y_pos + ball_y_motion;
             END IF;
+ 
         END IF;
     END PROCESS Move_Ball;
 
     red   <= sprite_pixel(11 DOWNTO 8) WHEN sprite_on = '1' ELSE "0000";
     green <= sprite_pixel(7  DOWNTO 4) WHEN sprite_on = '1' ELSE "0000";
     blue  <= sprite_pixel(3  DOWNTO 0) WHEN sprite_on = '1' ELSE "0000";
+
+    ball_x_pos_out <= ball_x_pos;
+    ball_y_pos_out <= ball_y_pos;
+    floor_hit <= '1' WHEN ball_y_pos >= BOTTOM ELSE '0';
 
 END behaviour;
