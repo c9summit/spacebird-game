@@ -50,7 +50,7 @@ begin
 
     -- White stars (4x4 pixels)
     if (((x + sx) mod 63 < 4) and
-        ((y + sx) mod 47 < 4)) then
+        (y mod 47 < 4)) then
 
         red   <= "1111";
         green <= "1111";
@@ -63,8 +63,8 @@ begin
         (y mod 83 < 3)) then
 
         red   <= "1111";
-        green <= "1111";
-        blue  <= "0000";
+        green <= "1010";
+        blue  <= "0010";
 
     end if;
 
