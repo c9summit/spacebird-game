@@ -75,6 +75,9 @@ architecture behaviour OF vga_display_bhtest IS
     -- "PRESS START" text: row 265
     CONSTANT PS_TEXT_X : INTEGER := 208;
     CONSTANT PS_TEXT_Y : INTEGER := 265;
+
+    constant BH_X : integer := 192;
+    constant BH_Y : integer := 176;
  
     -- char_rom for PAUSED
     SIGNAL pause_char_addr : STD_LOGIC_VECTOR(5 DOWNTO 0);
@@ -325,9 +328,13 @@ BEGIN
                 IF rocket_r /= "0000" OR rocket_g /= "0000" OR rocket_b /= "0000" THEN
                     r := rocket_r; g := rocket_g; b := rocket_b;
                 END IF;
-                IF bh_on = '1' then
-                    r:= bh_r; g := bh_g; b := bh_b;
-                end if;
+                IF (pc >= bh_x AND pc < bh_x + 256 AND pr >= bh_y AND pr < bh_y + 128) THEN
+                    IF bh_on = '1' THEN
+                        r := bh_r;
+                        g := bh_g;
+                        b := bh_b;
+                    END IF;
+                END IF;
  
             -- PAUSE: bg + pipes + rocket + translucent box + PAUSED text
             WHEN PAUSE_SCRN =>
