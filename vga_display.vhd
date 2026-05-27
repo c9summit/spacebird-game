@@ -24,6 +24,13 @@ ENTITY vga_display IS
  
         -- Rocket
         rocket_r, rocket_g, rocket_b : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+
+        -- Powerup
+        powerup_on           : IN STD_LOGIC;
+        powerup_r, powerup_g, powerup_b : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+
+        -- Lives
+        lives        : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
  
         -- Score (pass_count from pipe_gen)
         pass_count   : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -71,6 +78,14 @@ architecture behaviour OF vga_display IS
     -- "PRESS START" text: row 265
     CONSTANT PS_TEXT_X : INTEGER := 208;
     CONSTANT PS_TEXT_Y : INTEGER := 265;
+
+    -- "LIVES: X" during PLAY: top left
+    CONSTANT LV_TEXT_X : INTEGER := 10;
+    CONSTANT LV_TEXT_Y : INTEGER := 10;
+
+    -- "SCORE: XX" during PLAY: top right
+    CONSTANT PL_SC_TEXT_X : INTEGER := 530;
+    CONSTANT PL_SC_TEXT_Y : INTEGER := 10;
  
     -- char_rom for PAUSED
     SIGNAL pause_char_addr : STD_LOGIC_VECTOR(5 DOWNTO 0);
@@ -111,6 +126,27 @@ architecture behaviour OF vga_display IS
     SIGNAL ps_rel_row      : INTEGER;
     SIGNAL ps_char_idx     : INTEGER;
     SIGNAL in_ps_text      : STD_LOGIC;
+
+    -- char_rom for LIVES during PLAY
+    SIGNAL lv_char_addr    : STD_LOGIC_VECTOR(5 DOWNTO 0);
+    SIGNAL lv_font_r       : STD_LOGIC_VECTOR(2 DOWNTO 0);
+    SIGNAL lv_font_c       : STD_LOGIC_VECTOR(2 DOWNTO 0);
+    SIGNAL lv_pixel        : STD_LOGIC;
+    SIGNAL lv_rel_col      : INTEGER;
+    SIGNAL lv_rel_row      : INTEGER;
+    SIGNAL lv_char_idx     : INTEGER;
+    SIGNAL in_lv_text      : STD_LOGIC;
+    SIGNAL lives_digit     : INTEGER RANGE 0 TO 5;
+
+    -- char_rom for SCORE during PLAY
+    SIGNAL pl_sc_char_addr : STD_LOGIC_VECTOR(5 DOWNTO 0);
+    SIGNAL pl_sc_font_r    : STD_LOGIC_VECTOR(2 DOWNTO 0);
+    SIGNAL pl_sc_font_c    : STD_LOGIC_VECTOR(2 DOWNTO 0);
+    SIGNAL pl_sc_pixel     : STD_LOGIC;
+    SIGNAL pl_sc_rel_col   : INTEGER;
+    SIGNAL pl_sc_rel_row   : INTEGER;
+    SIGNAL pl_sc_char_idx  : INTEGER;
+    SIGNAL in_pl_sc_text   : STD_LOGIC;
  
     -- Score digits
     SIGNAL score_tens : INTEGER RANGE 0 TO 9;
@@ -128,6 +164,7 @@ BEGIN
     -- Score digit extraction
     score_tens  <= CONV_INTEGER(UNSIGNED(pass_count)) / 10;
     score_units <= CONV_INTEGER(UNSIGNED(pass_count)) MOD 10;
+    lives_digit <= CONV_INTEGER(UNSIGNED(lives));
  
     -- Overlay box region
     in_overlay <= '1' WHEN (pr >= OV_Y AND pr < OV_Y + OV_H AND
@@ -166,6 +203,22 @@ BEGIN
         clock => clk, 
         rom_mux_output => ps_pixel
     );
+
+    ROM_LV : char_rom PORT MAP(
+        character_address => lv_char_addr,
+        font_row => lv_font_r,
+        font_col => lv_font_c,
+        clock => clk,
+        rom_mux_output => lv_pixel
+    );
+
+    ROM_PL_SC : char_rom PORT MAP(
+        character_address => pl_sc_char_addr,
+        font_row => pl_sc_font_r,
+        font_col => pl_sc_font_c,
+        clock => clk,
+        rom_mux_output => pl_sc_pixel
+    );
  
     -- Region detection
     in_pause_text <= '1' WHEN (pr >= PAUSE_TEXT_Y AND pr < PAUSE_TEXT_Y + 16 AND
@@ -185,6 +238,16 @@ BEGIN
     in_ps_text <= '1' WHEN (pr >= PS_TEXT_Y AND pr < PS_TEXT_Y + 8 AND
                              pc >= PS_TEXT_X AND pc < PS_TEXT_X + 11*8)
                   ELSE '0';
+
+    -- "LIVES: X" = 8 chars during PLAY
+    in_lv_text <= '1' WHEN (pr >= LV_TEXT_Y AND pr < LV_TEXT_Y + 8 AND
+                              pc >= LV_TEXT_X AND pc < LV_TEXT_X + 8*8)
+                  ELSE '0';
+
+    -- "SCORE: XX" = 9 chars during PLAY
+    in_pl_sc_text <= '1' WHEN (pr >= PL_SC_TEXT_Y AND pr < PL_SC_TEXT_Y + 8 AND
+                                pc >= PL_SC_TEXT_X AND pc < PL_SC_TEXT_X + 9*8)
+                     ELSE '0';
  
     -- PAUSED text addressing (scale 2)
     -- P=16 A=1 U=21 S=19 E=5 D=4
@@ -284,6 +347,49 @@ BEGIN
  
     ps_font_r <= CONV_STD_LOGIC_VECTOR(ps_rel_row, 3);
     ps_font_c <= CONV_STD_LOGIC_VECTOR(ps_rel_col MOD 8, 3);
+
+    -- LIVES: X addressing (L=12 I=9 V=22 E=5 S=19 colon=46 space=32 digit)
+    lv_rel_col  <= pc - LV_TEXT_X;
+    lv_rel_row  <= pr - LV_TEXT_Y;
+    lv_char_idx <= lv_rel_col / 8;
+    PROCESS(lv_char_idx, lives_digit)
+    BEGIN
+        CASE lv_char_idx IS
+            WHEN 0 => lv_char_addr <= CONV_STD_LOGIC_VECTOR(12, 6); -- L
+            WHEN 1 => lv_char_addr <= CONV_STD_LOGIC_VECTOR(9,  6); -- I
+            WHEN 2 => lv_char_addr <= CONV_STD_LOGIC_VECTOR(22, 6); -- V
+            WHEN 3 => lv_char_addr <= CONV_STD_LOGIC_VECTOR(5,  6); -- E
+            WHEN 4 => lv_char_addr <= CONV_STD_LOGIC_VECTOR(19, 6); -- S
+            WHEN 5 => lv_char_addr <= CONV_STD_LOGIC_VECTOR(46, 6); -- :
+            WHEN 6 => lv_char_addr <= CONV_STD_LOGIC_VECTOR(32, 6); -- space
+            WHEN 7 => lv_char_addr <= CONV_STD_LOGIC_VECTOR(48 + lives_digit, 6);
+            WHEN OTHERS => lv_char_addr <= CONV_STD_LOGIC_VECTOR(32, 6);
+        END CASE;
+    END PROCESS;
+    lv_font_r <= CONV_STD_LOGIC_VECTOR(lv_rel_row, 3);
+    lv_font_c <= CONV_STD_LOGIC_VECTOR(lv_rel_col MOD 8, 3);
+
+    -- SCORE: XX during PLAY
+    pl_sc_rel_col  <= pc - PL_SC_TEXT_X;
+    pl_sc_rel_row  <= pr - PL_SC_TEXT_Y;
+    pl_sc_char_idx <= pl_sc_rel_col / 8;
+    PROCESS(pl_sc_char_idx, score_tens, score_units)
+    BEGIN
+        CASE pl_sc_char_idx IS
+            WHEN 0 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(19, 6); -- S
+            WHEN 1 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(3,  6); -- C
+            WHEN 2 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(15, 6); -- O
+            WHEN 3 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(18, 6); -- R
+            WHEN 4 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(5,  6); -- E
+            WHEN 5 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(46, 6); -- :
+            WHEN 6 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(32, 6); -- space
+            WHEN 7 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(48 + score_tens,  6);
+            WHEN 8 => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(48 + score_units, 6);
+            WHEN OTHERS => pl_sc_char_addr <= CONV_STD_LOGIC_VECTOR(32, 6);
+        END CASE;
+    END PROCESS;
+    pl_sc_font_r <= CONV_STD_LOGIC_VECTOR(pl_sc_rel_row, 3);
+    pl_sc_font_c <= CONV_STD_LOGIC_VECTOR(pl_sc_rel_col MOD 8, 3);
  
     -- Main RGB output process
     PROCESS(game_state, pr, pc,
@@ -291,10 +397,13 @@ BEGIN
             menu_on, menu_r, menu_g, menu_b,
             pipe_on, pipe_r, pipe_g, pipe_b,
             rocket_r, rocket_g, rocket_b,
+            powerup_on, powerup_r, powerup_g, powerup_b,
             in_overlay, in_pause_text, pause_pixel,
             in_go_text, go_pixel,
             in_sc_text, sc_pixel,
-            in_ps_text, ps_pixel)
+            in_ps_text, ps_pixel,
+            in_lv_text, lv_pixel,
+            in_pl_sc_text, pl_sc_pixel)
  
         VARIABLE r, g, b : STD_LOGIC_VECTOR(3 DOWNTO 0);
         VARIABLE on_border : BOOLEAN;
@@ -311,21 +420,33 @@ BEGIN
                     r := menu_r; g := menu_g; b := menu_b;
                 END IF;
  
-            -- PLAY: bg + pipes + rocket
+            -- PLAY: bg + pipes + powerup + rocket + HUD
             WHEN PLAY_SCRN =>
                 r := bg_r; g := bg_g; b := bg_b;
                 IF pipe_on = '1' THEN
                     r := pipe_r; g := pipe_g; b := pipe_b;
                 END IF;
+                IF powerup_on = '1' THEN
+                    r := powerup_r; g := powerup_g; b := powerup_b;
+                END IF;
                 IF rocket_r /= "0000" OR rocket_g /= "0000" OR rocket_b /= "0000" THEN
                     r := rocket_r; g := rocket_g; b := rocket_b;
                 END IF;
+                IF in_lv_text = '1' AND lv_pixel = '1' THEN
+                    r := "1111"; g := "1111"; b := "1111";
+                END IF;
+                IF in_pl_sc_text = '1' AND pl_sc_pixel = '1' THEN
+                    r := "1111"; g := "1111"; b := "1111";
+                END IF;
  
-            -- PAUSE: bg + pipes + rocket + translucent box + PAUSED text
+            -- PAUSE: bg + pipes + powerup + rocket + translucent box + PAUSED text
             WHEN PAUSE_SCRN =>
                 r := bg_r; g := bg_g; b := bg_b;
                 IF pipe_on = '1' THEN
                     r := pipe_r; g := pipe_g; b := pipe_b;
+                END IF;
+                IF powerup_on = '1' THEN
+                    r := powerup_r; g := powerup_g; b := powerup_b;
                 END IF;
                 IF rocket_r /= "0000" OR rocket_g /= "0000" OR rocket_b /= "0000" THEN
                     r := rocket_r; g := rocket_g; b := rocket_b;
