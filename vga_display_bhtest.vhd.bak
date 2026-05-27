@@ -325,7 +325,7 @@ BEGIN
                 IF rocket_r /= "0000" OR rocket_g /= "0000" OR rocket_b /= "0000" THEN
                     r := rocket_r; g := rocket_g; b := rocket_b;
                 END IF;
-                IF bh_on = '1' then
+                IF bh_on = "1" then
                     r:= bh_r; g := bh_g; b := bh_b;
                 end if;
  
