@@ -5,15 +5,15 @@ USE IEEE.STD_LOGIC_UNSIGNED.all;
 LIBRARY altera_mf;
 USE altera_mf.all;
 
-ENTITY jupiter IS
+ENTITY jupiter_rom IS
 PORT(
 	address : IN  STD_LOGIC_VECTOR(13 DOWNTO 0);
 	clock   : IN  STD_LOGIC;
 	q       : OUT STD_LOGIC_VECTOR(11 DOWNTO 0)
 );
-END jupiter;
+END jupiter_rom;
 
-ARCHITECTURE SYN OF jupiter IS
+ARCHITECTURE SYN OF jupiter_rom IS
 
 COMPONENT altsyncram
 GENERIC (

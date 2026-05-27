@@ -5,15 +5,15 @@ USE IEEE.STD_LOGIC_UNSIGNED.all;
 LIBRARY altera_mf;
 USE altera_mf.all;
 
-ENTITY uranus IS
+ENTITY uranus_rom IS
 PORT(
 	address : IN  STD_LOGIC_VECTOR(13 DOWNTO 0);
 	clock   : IN  STD_LOGIC;
 	q       : OUT STD_LOGIC_VECTOR(11 DOWNTO 0)
 );
-END uranus;
+END uranus_rom;
 
-ARCHITECTURE SYN OF uranus IS
+ARCHITECTURE SYN OF uranus_rom IS
 
 COMPONENT altsyncram
 GENERIC (

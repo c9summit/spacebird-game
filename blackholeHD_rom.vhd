@@ -5,15 +5,15 @@ USE IEEE.STD_LOGIC_UNSIGNED.all;
 LIBRARY altera_mf;
 USE altera_mf.all;
 
-ENTITY blackholeHD IS
+ENTITY blackholeHD_rom IS
 PORT(
 	address : IN  STD_LOGIC_VECTOR(14 DOWNTO 0);
 	clock   : IN  STD_LOGIC;
 	q       : OUT STD_LOGIC_VECTOR(11 DOWNTO 0)
 );
-END blackholeHD;
+END blackholeHD_rom;
 
-ARCHITECTURE SYN OF blackholeHD IS
+ARCHITECTURE SYN OF blackholeHD_rom IS
 
 COMPONENT altsyncram
 GENERIC (
@@ -46,7 +46,7 @@ GENERIC MAP (
 	address_aclr_a        => "NONE",
 	clock_enable_input_a  => "BYPASS",
 	clock_enable_output_a => "BYPASS",
-	init_file             => "mif/blackholeHD.mif",
+	init_file             => "blackholeHD.mif",
 	intended_device_family=> "Cyclone V",
 	lpm_hint              => "ENABLE_RUNTIME_MOD=NO",
 	lpm_type              => "altsyncram",
