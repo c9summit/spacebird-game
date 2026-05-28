@@ -5,37 +5,27 @@ USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 ENTITY powerup IS
     PORT(
-        clk          : IN  STD_LOGIC;
-        vert_sync    : IN  STD_LOGIC;
-        scroll_en    : IN  STD_LOGIC;
-        score_rst    : IN  STD_LOGIC;
-        pass_count   : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
-
-        pixel_row    : IN  STD_LOGIC_VECTOR(9 DOWNTO 0);
-        pixel_column : IN  STD_LOGIC_VECTOR(9 DOWNTO 0);
-
+        clk, vert_sync, scroll_en, score_rst : IN  STD_LOGIC;
+        pass_count : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
+        pixel_row, pixel_column : IN  STD_LOGIC_VECTOR(9 DOWNTO 0);
         powerup_hit  : IN  STD_LOGIC;
         powerup_on   : OUT STD_LOGIC;
-        powerup_x    : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
-        powerup_y    : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
-        red          : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        green        : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        blue         : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
-    );
+        powerup_x, powerup_y : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
+        red, green, blue : OUT STD_LOGIC_VECTOR(3 DOWNTO 0));
 END powerup;
 
 ARCHITECTURE behaviour OF powerup IS
 
-    CONSTANT POWERUP_W   : INTEGER := 16;
-    CONSTANT POWERUP_H   : INTEGER := 16;
-    CONSTANT POWERUP_SPD : INTEGER := 12; 
-    CONSTANT SCREEN_W    : INTEGER := 640;
+    CONSTANT POWERUP_W : INTEGER := 16;
+    CONSTANT POWERUP_H : INTEGER := 16;
+    CONSTANT POWERUP_SPD : INTEGER := 8; 
+    CONSTANT SCREEN_W : INTEGER := 640;
     CONSTANT RESPAWN_COUNT : INTEGER := 20; -- pipes before respawn
 
-    SIGNAL pu_x      : INTEGER RANGE -20 TO 700 := 700;
-    SIGNAL pu_y      : INTEGER RANGE 0  TO 464  := 200;
-    SIGNAL pu_active : STD_LOGIC := '0'; -- visible and moving
-    SIGNAL pu_collected : STD_LOGIC := '0'; -- waiting to respawn
+    SIGNAL pu_x : INTEGER RANGE -20 TO 700 := 700;
+    SIGNAL pu_y : INTEGER RANGE 0  TO 464  := 200;
+    SIGNAL pu_active : STD_LOGIC := '0';
+    SIGNAL pu_collected : STD_LOGIC := '0';
 
     SIGNAL lfsr      : STD_LOGIC_VECTOR(7 DOWNTO 0) := "11001010";
     SIGNAL vsync_d   : STD_LOGIC := '0';
