@@ -83,13 +83,15 @@ begin
                 to_unsigned(addr_int, 15)
             );
 
+            if rom_data /= X"F6C" then
+
             red   <= rom_data(11 downto 8);
             green <= rom_data(7 downto 4);
             blue  <= rom_data(3 downto 0);
-
             active <= '1';
 
-
+            else
+                active <= '0';
         else
 
             rom_addr <= (others => '0');

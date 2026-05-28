@@ -46,7 +46,7 @@ GENERIC MAP (
 	address_aclr_a        => "NONE",
 	clock_enable_input_a  => "BYPASS",
 	clock_enable_output_a => "BYPASS",
-	init_file             => "blackholeHD.mif",
+	init_file             => "blackhole.mif",
 	intended_device_family=> "Cyclone V",
 	lpm_hint              => "ENABLE_RUNTIME_MOD=NO",
 	lpm_type              => "altsyncram",
