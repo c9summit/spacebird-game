@@ -5,51 +5,42 @@ USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 ENTITY menu_display IS
     PORT(
-        clk          : IN  STD_LOGIC;
-        pixel_row    : IN  STD_LOGIC_VECTOR(9 DOWNTO 0);
-        pixel_column : IN  STD_LOGIC_VECTOR(9 DOWNTO 0);
-        sw0          : IN  STD_LOGIC; -- '0' = game mode, '1' = training mode
-        menu_on      : OUT STD_LOGIC;
-        red          : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        green        : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        blue         : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
-    );
+        clk : IN  STD_LOGIC;
+        pixel_row, pixel_column : IN  STD_LOGIC_VECTOR(9 DOWNTO 0);
+        sw0 : IN  STD_LOGIC;
+        menu_on : OUT STD_LOGIC;
+        red, green, blue : OUT STD_LOGIC_VECTOR(3 DOWNTO 0));
 END menu_display;
 
 ARCHITECTURE behaviour OF menu_display IS
 
     COMPONENT char_rom IS
     PORT(
-        character_address : IN  STD_LOGIC_VECTOR(5 DOWNTO 0);
-        font_row          : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        font_col          : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
-        clock             : IN  STD_LOGIC;
-        rom_mux_output    : OUT STD_LOGIC
-    );
+        character_address : IN STD_LOGIC_VECTOR(5 DOWNTO 0);
+        font_row : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+        font_col : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+        clock : IN STD_LOGIC;
+        rom_mux_output : OUT STD_LOGIC
+    );      
     END COMPONENT;
 
-    -- Title: "SPACE BIRD" - 10 chars, 16px wide each (scale 2), 16px tall
-    CONSTANT TITLE_X  : INTEGER := 200;
-    CONSTANT TITLE_Y  : INTEGER := 100;
+    CONSTANT TITLE_X : INTEGER := 200;
+    CONSTANT TITLE_Y : INTEGER := 100;
     CONSTANT TITLE_CW : INTEGER := 16;
     CONSTANT TITLE_CH : INTEGER := 16;
 
-    -- Mode boxes
-    CONSTANT BOX_X       : INTEGER := 220;
-    CONSTANT BOX_W       : INTEGER := 200;
-    CONSTANT BOX_H       : INTEGER := 40;
-    CONSTANT GAME_BOX_Y  : INTEGER := 180;
+    CONSTANT BOX_X : INTEGER := 220;
+    CONSTANT BOX_W : INTEGER := 200;
+    CONSTANT BOX_H : INTEGER := 40;
+    CONSTANT GAME_BOX_Y : INTEGER := 180;
     CONSTANT TRAIN_BOX_Y : INTEGER := 260;
 
-    -- "GAME MODE" text (9 chars x 8px)
     CONSTANT GAME_TEXT_X : INTEGER := 248;
     CONSTANT GAME_TEXT_Y : INTEGER := 196;
 
-    -- "TRAINING MODE" text (13 chars x 8px)
     CONSTANT TRAIN_TEXT_X : INTEGER := 228;
     CONSTANT TRAIN_TEXT_Y : INTEGER := 276;
 
-    -- "PRESS START" text (11 chars x 8px)
     CONSTANT PS_X : INTEGER := 230;
     CONSTANT PS_Y : INTEGER := 380;
 
@@ -94,11 +85,8 @@ ARCHITECTURE behaviour OF menu_display IS
     SIGNAL in_ps           : STD_LOGIC;
 
     -- Box regions
-    SIGNAL in_game_box     : STD_LOGIC;
-    SIGNAL in_train_box    : STD_LOGIC;
-
-    SIGNAL pr : INTEGER;
-    SIGNAL pc : INTEGER;
+    SIGNAL in_game_box, in_train_box : STD_LOGIC;
+    SIGNAL pr, pc : INTEGER;
 
 BEGIN
 
@@ -137,32 +125,24 @@ BEGIN
         rom_mux_output    => ps_pixel
     );
 
-    -- Region detection
-    in_title <= '1' WHEN (pr >= TITLE_Y AND pr < TITLE_Y + TITLE_CH AND
-                          pc >= TITLE_X AND pc < TITLE_X + 10*TITLE_CW)
+    in_title <= '1' WHEN (pr >= TITLE_Y AND pr < TITLE_Y + TITLE_CH AND pc >= TITLE_X AND pc < TITLE_X + 10*TITLE_CW)
                 ELSE '0';
 
-    in_game_text <= '1' WHEN (pr >= GAME_TEXT_Y AND pr < GAME_TEXT_Y + 8 AND
-                               pc >= GAME_TEXT_X AND pc < GAME_TEXT_X + 9*8)
+    in_game_text <= '1' WHEN (pr >= GAME_TEXT_Y AND pr < GAME_TEXT_Y + 8 AND pc >= GAME_TEXT_X AND pc < GAME_TEXT_X + 9*8)
                     ELSE '0';
 
-    in_train_text <= '1' WHEN (pr >= TRAIN_TEXT_Y AND pr < TRAIN_TEXT_Y + 8 AND
-                                pc >= TRAIN_TEXT_X AND pc < TRAIN_TEXT_X + 13*8)
+    in_train_text <= '1' WHEN (pr >= TRAIN_TEXT_Y AND pr < TRAIN_TEXT_Y + 8 AND pc >= TRAIN_TEXT_X AND pc < TRAIN_TEXT_X + 13*8)
                      ELSE '0';
 
-    in_ps <= '1' WHEN (pr >= PS_Y AND pr < PS_Y + 8 AND
-                       pc >= PS_X AND pc < PS_X + 11*8)
+    in_ps <= '1' WHEN (pr >= PS_Y AND pr < PS_Y + 8 AND pc >= PS_X AND pc < PS_X + 11*8)
              ELSE '0';
 
-    in_game_box  <= '1' WHEN (pr >= GAME_BOX_Y  AND pr < GAME_BOX_Y  + BOX_H AND
-                               pc >= BOX_X AND pc < BOX_X + BOX_W)
+    in_game_box  <= '1' WHEN (pr >= GAME_BOX_Y  AND pr < GAME_BOX_Y  + BOX_H AND pc >= BOX_X AND pc < BOX_X + BOX_W)
                     ELSE '0';
 
-    in_train_box <= '1' WHEN (pr >= TRAIN_BOX_Y AND pr < TRAIN_BOX_Y + BOX_H AND
-                               pc >= BOX_X AND pc < BOX_X + BOX_W)
+    in_train_box <= '1' WHEN (pr >= TRAIN_BOX_Y AND pr < TRAIN_BOX_Y + BOX_H AND pc >= BOX_X AND pc < BOX_X + BOX_W)
                     ELSE '0';
 
-    -- Title addressing
     title_rel_col  <= pc - TITLE_X;
     title_rel_row  <= pr - TITLE_Y;
     title_char_idx <= title_rel_col / TITLE_CW;
@@ -187,7 +167,6 @@ BEGIN
     title_font_r <= CONV_STD_LOGIC_VECTOR((title_rel_row / 2), 3);
     title_font_c <= CONV_STD_LOGIC_VECTOR((title_rel_col MOD TITLE_CW) / 2, 3);
 
-    -- Game mode text addressing: "GAME MODE"
     game_rel_col  <= pc - GAME_TEXT_X;
     game_rel_row  <= pr - GAME_TEXT_Y;
     game_char_idx <= game_rel_col / 8;
@@ -211,7 +190,6 @@ BEGIN
     game_font_r <= CONV_STD_LOGIC_VECTOR(game_rel_row, 3);
     game_font_c <= CONV_STD_LOGIC_VECTOR(game_rel_col MOD 8, 3);
 
-    -- Training mode text addressing: "TRAINING MODE"
     train_rel_col  <= pc - TRAIN_TEXT_X;
     train_rel_row  <= pr - TRAIN_TEXT_Y;
     train_char_idx <= train_rel_col / 8;
@@ -239,9 +217,8 @@ BEGIN
     train_font_r <= CONV_STD_LOGIC_VECTOR(train_rel_row, 3);
     train_font_c <= CONV_STD_LOGIC_VECTOR(train_rel_col MOD 8, 3);
 
-    -- Press start text addressing: "PRESS START"
-    ps_rel_col  <= pc - PS_X;
-    ps_rel_row  <= pr - PS_Y;
+    ps_rel_col <= pc - PS_X;
+    ps_rel_row <= pr - PS_Y;
     ps_char_idx <= ps_rel_col / 8;
 
     PROCESS(ps_char_idx)
@@ -265,13 +242,8 @@ BEGIN
     ps_font_r <= CONV_STD_LOGIC_VECTOR(ps_rel_row, 3);
     ps_font_c <= CONV_STD_LOGIC_VECTOR(ps_rel_col MOD 8, 3);
 
-    -- RGB output - no background, just boxes and text
-    PROCESS(pr, pc, sw0,
-            in_title, title_pixel,
-            in_game_text, game_pixel,
-            in_train_text, train_pixel,
-            in_ps, ps_pixel,
-            in_game_box, in_train_box)
+    PROCESS(pr, pc, sw0, in_title, title_pixel, in_game_text, game_pixel,
+            in_train_text, train_pixel, in_ps, ps_pixel,in_game_box, in_train_box)
 
         VARIABLE r, g, b  : STD_LOGIC_VECTOR(3 DOWNTO 0);
         VARIABLE pixel_active : STD_LOGIC;
@@ -281,7 +253,6 @@ BEGIN
     BEGIN
         r := "0000"; g := "0000"; b := "0000";
         pixel_active := '0';
-
         on_game_border  := (in_game_box  = '1') AND
                            (pr = GAME_BOX_Y OR pr = GAME_BOX_Y  + BOX_H - 1 OR
                             pc = BOX_X     OR pc = BOX_X + BOX_W - 1 OR
@@ -294,43 +265,40 @@ BEGIN
                             pr = TRAIN_BOX_Y + 1 OR pr = TRAIN_BOX_Y + BOX_H - 2 OR
                             pc = BOX_X + 1       OR pc = BOX_X + BOX_W - 2);
 
-        -- Game mode box
         IF in_game_box = '1' THEN
             pixel_active := '1';
             IF sw0 = '0' THEN
                 IF on_game_border THEN
-                    r := "0000"; g := "1111"; b := "1111"; -- cyan border
+                    r := "0000"; g := "1111"; b := "1111";
                 ELSE
-                    r := "0000"; g := "0010"; b := "0110"; -- dark blue fill
+                    r := "0000"; g := "0010"; b := "0110";
                 END IF;
             ELSE
                 IF on_game_border THEN
-                    r := "0100"; g := "0100"; b := "0110"; -- dim border
+                    r := "0100"; g := "0100"; b := "0110";
                 ELSE
-                    pixel_active := '0'; -- unselected fill = transparent
+                    pixel_active := '0';
                 END IF;
             END IF;
         END IF;
 
-        -- Training mode box
         IF in_train_box = '1' THEN
             pixel_active := '1';
             IF sw0 = '1' THEN
                 IF on_train_border THEN
-                    r := "0000"; g := "1111"; b := "1111"; -- cyan border
+                    r := "0000"; g := "1111"; b := "1111";
                 ELSE
-                    r := "0000"; g := "0010"; b := "0110"; -- dark blue fill
+                    r := "0000"; g := "0010"; b := "0110";
                 END IF;
             ELSE
                 IF on_train_border THEN
-                    r := "0100"; g := "0100"; b := "0110"; -- dim border
+                    r := "0100"; g := "0100"; b := "0110";
                 ELSE
-                    pixel_active := '0'; -- unselected fill = transparent
+                    pixel_active := '0';
                 END IF;
             END IF;
         END IF;
 
-        -- White text on top
         IF in_title = '1' AND title_pixel = '1' THEN
             r := "1111"; g := "1111"; b := "1111";
             pixel_active := '1';
