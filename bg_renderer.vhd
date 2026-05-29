@@ -4,9 +4,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity bg_renderer is
     port (
-        clk : in std_logic;
+        clk, scroll_en : in std_logic;
         pixel_row, pixel_column : in std_logic_vector(9 downto 0);
-        scroll_en: in std_logic;
         red, green, blue : out std_logic_vector(3 downto 0));
 end bg_renderer;
 
@@ -24,9 +23,7 @@ begin
 
     process(pixel_row, pixel_column, scroll_x)
 
-    variable x : integer;
-    variable y : integer;
-    variable sx : integer;
+    variable x, y, sx : integer;
 
 begin
     x := to_integer(unsigned(pixel_column));
